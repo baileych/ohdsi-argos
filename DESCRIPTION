@@ -1,0 +1,17 @@
+Package: Argos
+Type: Package
+Title: Affordances for Retrieval of General OHDSI Stuff
+Version: 0.1.0
+Authors@R: person('Charles', 'Bailey', email = 'baileyc@email.chop.edu',
+		  role = c('aut', 'cre'))
+Description: The OHDSI/OMOP Common Data Model provides a highly-interrelated,
+    person-centric model, with extensive terminology standardization. Argos provides
+    a simple toolset to make accessing databases that implement the OMOP/OHDSI CDM,
+    and linking clinical data to the standard vocabulary, easier.
+License: Artistic-2.0
+Imports:
+    dplyr,
+    jsonlite,
+    utils
+LazyData: TRUE
+RoxygenNote: 5.0.0
