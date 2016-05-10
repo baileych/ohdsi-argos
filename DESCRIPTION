@@ -9,9 +9,12 @@ Description: The OHDSI/OMOP Common Data Model provides a highly-interrelated,
     a simple toolset to make accessing databases that implement the OMOP/OHDSI CDM,
     and linking clinical data to the standard vocabulary, easier.
 License: Artistic-2.0
-Imports:
+Imports: 
     dplyr,
     jsonlite,
     utils
 LazyData: TRUE
 RoxygenNote: 5.0.0
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
