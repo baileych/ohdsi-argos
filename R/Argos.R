@@ -10,4 +10,5 @@
 #' @import dplyr
 #' @export src_argos
 #' @export find_config_files
+#' @export set_ohdsi_default_src
 NULL
