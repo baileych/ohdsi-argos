@@ -1,7 +1,7 @@
 Package: Argos
 Type: Package
 Title: Affordances for Retrieval of General OHDSI Stuff
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: person('Charles', 'Bailey', email = 'baileyc@email.chop.edu',
 		  role = c('aut', 'cre'))
 Description: The OHDSI/OMOP Common Data Model provides a highly-interrelated,
