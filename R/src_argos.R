@@ -20,29 +20,37 @@
 #' \code{basenames}, if present.  The first file that exists, is
 #' readable, and evaluates as legal JSON is used as the source of
 #' configuration data.
-#' 
-#' @param paths A vector of full path names for the configuration file.  If present,
-#'   only \code{paths} is checked.
+#'
+#' @param basenames A vector of file names to use in searching for configuration
+#'   file, if \code{paths} is absent.  It defaults to the name of this file.
 #' @param dirs A vector of directory names to use in searching for configuration
 #'   files, if \code{paths} is absent.  It defaults to \verb{$HOME}, the location
 #'   of the file containing the calling function, and the location of this file.
-#' @param basenames A vector of file names to use in searching for configuration
-#'   file, if \code{paths} is absent.  It defaults to the name of this file.
+#' @param paths A vector of full path names for the configuration file.  If present,
+#'   only \code{paths} is checked.
 #' @param config A list containg the configuration data, to be used instead of
 #'   reading a configuration file, should you wish to skip that step.
-#' 
+#'
 #' @return A \code{\link[dplyr]{src}} object.  The specific class of the object
 #'   is determined by the \code{src_name} in the configuration data.
 #'
 #' @examples
 #' \dontrun{
-#' src_argos()  # Search all the defaults
-#' src_argos('/path/to/known/config.json') # No defaults
+#' # Search all the (filename-based) defaults
+#' src_argos()
+#'
+#' # "The usual"
+#' src_argos('myproj_prod')
+#'
+#' # Look around
 #' src_argos( dirs = c(Sys.getenv('PROJ_CONF_DIR'), 'var/lib', getwd()),
-#'            basenames = c('myproj', Sys.getenv('PROJ_NAME')))
+#'            basenames = c('myproj', Sys.getenv('PROJ_NAME')) )
+#'
+#' # No defaults
+#' src_argos(paths = c('/path/to/known/config.json'))
 #' }
 
-src_argos <- function(paths = NA, dirs = NA, basenames = NA, config = NA) {
+src_argos <- function(basenames = NA, dirs = NA, paths = NA, config = NA) {
 
     if (is.na(config)) {
         if (is.na(paths)) {
@@ -50,7 +58,7 @@ src_argos <- function(paths = NA, dirs = NA, basenames = NA, config = NA) {
             args <- args[ !is.na(args) ]
             paths <- do.call(find_config_files, args)
         }
-        config <- .read.config(paths)
+        config <- read_config_file(paths)
     }
 
     do.call(config$src_name, config$src_args)
@@ -89,14 +97,14 @@ src_argos <- function(paths = NA, dirs = NA, basenames = NA, config = NA) {
 #' tradition of "hidden" configuration files, each basename is prefixed with
 #' \verb{.} before tryng the basename alone.
 #'
-#' @param dirs A vector of directory names to use in searching for configuration
-#'   files.
 #' @param basenames A vector of file names to use in searching for configuration
+#'   files.
+#' @param dirs A vector of directory names to use in searching for configuration
 #'   files.
 #' @param suffices A vector of suffices (file "type"s) to use in searching for
 #'   the configuration file.
-#' 
-#' @return A function that constructs \code{\link[dplyr]{tbl}} objects
+#'
+#' @return A vector of path specifications
 #'
 #' @examples
 #' find_config_files() # All defaults
@@ -104,8 +112,8 @@ src_argos <- function(paths = NA, dirs = NA, basenames = NA, config = NA) {
 #'                           '/usr/local/etc', '/etc'),
 #'                  basenames = c('my_app'),
 #'                  suffices = c('.conf', '.rc'))
-find_config_files <- function(dirs = .dir.defaults(),
-                              basenames = .basename.defaults(),
+find_config_files <- function(basenames = .basename.defaults(),
+                              dirs = .dir.defaults(),
                               suffices = .suffix.defaults()) {
 
     files <- c()
@@ -115,7 +123,7 @@ find_config_files <- function(dirs = .dir.defaults(),
         if (cand %in% files) next
         if (file.exists(cand)) files <- c(files,cand)
     }
-    
+
     for (d in dirs[ !is.na(dirs) ]) {
         for (b in basenames) {
             for (name in c(paste0('.',b), b)) {
@@ -129,6 +137,32 @@ find_config_files <- function(dirs = .dir.defaults(),
         }
     }
     files
+}
+
+
+#' Read the content of a JSON config file
+#'
+#' Given a vector of file paths, \code{read_config_file} attempts to read a JSON
+#' configuration file, using each element of the vector to locate the file.
+#' It returns the contents of the first file successfully read; subsequent path
+#' specifications are ignored.
+#' 
+#' @param paths A vector of path specifications to use in searching for
+#'   the configuration file.
+#'
+#' @return A data frame containing the contents of the configuration file,
+#'   as parsed by \code{\link[jsonlite]{fromJSON}}, or \code{NA} if no file
+#'   could be read.
+#'
+#' @examples
+#' read_config_file( c('~/my_app.json', '~/my_proj.json'))
+read_config_file <- function(paths = NA) {
+    for (p in paths) {
+        config <-
+            tryCatch(jsonlite::fromJSON(p),
+                     error = function(e) NA)
+        if (!is.na(config[1])) return(config)
+    }
 }
 
 
@@ -159,14 +193,3 @@ find_config_files <- function(dirs = .dir.defaults(),
 
 # Internal function to generate vector of suffices to search
 .suffix.defaults <- function() c('.json', '.conf', '')
-
-# Internal function to read JSON config file; returns contents of
-# first file successfully read
-.read.config <- function(paths = NA) {
-    for (p in paths) {
-        config <-
-            tryCatch(jsonlite::fromJSON(p),
-                     error = function(e) NA)
-        if (!is.na(config[1])) return(config)
-    }
-}

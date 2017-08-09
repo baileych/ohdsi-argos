@@ -4,14 +4,14 @@
 \alias{find_config_files}
 \title{Locate candidate configuration files}
 \usage{
-find_config_files(dirs = .dir.defaults(), basenames = .basename.defaults(),
+find_config_files(basenames = .basename.defaults(), dirs = .dir.defaults(),
   suffices = .suffix.defaults())
 }
 \arguments{
-\item{dirs}{A vector of directory names to use in searching for configuration
+\item{basenames}{A vector of file names to use in searching for configuration
 files.}
 
-\item{basenames}{A vector of file names to use in searching for configuration
+\item{dirs}{A vector of directory names to use in searching for configuration
 files.}
 
 \item{suffices}{A vector of suffices (file "type"s) to use in searching for

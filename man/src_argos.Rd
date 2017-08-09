@@ -4,18 +4,18 @@
 \alias{src_argos}
 \title{Connect to database using config file}
 \usage{
-src_argos(paths = NA, dirs = NA, basenames = NA, config = NA)
+src_argos(basenames = NA, dirs = NA, paths = NA, config = NA)
 }
 \arguments{
-\item{paths}{A vector of full path names for the configuration file.  If present,
-only \code{paths} is checked.}
+\item{basenames}{A vector of file names to use in searching for configuration
+file, if \code{paths} is absent.  It defaults to the name of this file.}
 
 \item{dirs}{A vector of directory names to use in searching for configuration
 files, if \code{paths} is absent.  It defaults to \verb{$HOME}, the location
 of the file containing the calling function, and the location of this file.}
 
-\item{basenames}{A vector of file names to use in searching for configuration
-file, if \code{paths} is absent.  It defaults to the name of this file.}
+\item{paths}{A vector of full path names for the configuration file.  If present,
+only \code{paths} is checked.}
 
 \item{config}{A list containg the configuration data, to be used instead of
 reading a configuration file, should you wish to skip that step.}
@@ -49,10 +49,18 @@ configuration data.
 }
 \examples{
 \dontrun{
-src_argos()  # Search all the defaults
-src_argos('/path/to/known/config.json') # No defaults
+# Search all the (filename-based) defaults
+src_argos()
+
+# "The usual"
+src_argos('myproj_prod')
+
+# Look around
 src_argos( dirs = c(Sys.getenv('PROJ_CONF_DIR'), 'var/lib', getwd()),
-           basenames = c('myproj', Sys.getenv('PROJ_NAME')))
+           basenames = c('myproj', Sys.getenv('PROJ_NAME')) )
+
+# No defaults
+src_argos(paths = c('/path/to/known/config.json')) # No defaults
 }
 }
 
