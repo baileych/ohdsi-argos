@@ -60,7 +60,7 @@ src_argos( dirs = c(Sys.getenv('PROJ_CONF_DIR'), 'var/lib', getwd()),
            basenames = c('myproj', Sys.getenv('PROJ_NAME')) )
 
 # No defaults
-src_argos(paths = c('/path/to/known/config.json')) # No defaults
+src_argos(paths = c('/path/to/known/config.json'))
 }
 }
 

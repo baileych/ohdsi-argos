@@ -48,9 +48,8 @@ return value disambiguates them by using different names:
 }
 \examples{
 \dontrun{
-set_default_ohdsi_src(src_argos())
-set_default_ohdsi_src(my.src)
-set_default_ohdsi_src(src_postgres(...))
+codes_to_std_concepts(c('282.61', '282.62', '282.41', '282.42'),
+                      vocabulary = 'ICD9CM')
 }
 }
 

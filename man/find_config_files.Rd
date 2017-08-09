@@ -18,7 +18,7 @@ files.}
 the configuration file.}
 }
 \value{
-A function that constructs \code{\link[dplyr]{tbl}} objects
+A vector of path specifications
 }
 \description{
 Given vectors of directories, basenames, and suffices,
