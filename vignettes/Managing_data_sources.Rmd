@@ -45,7 +45,7 @@ If you know where your configuration data lives, you can point `src_argos` direc
 
 #### Using environment variables
 
-If you need to specify where to look at runtime, you can use the environment variable _BASENAME_`CONFIG` to point to a configuration file, where _BASENAME_ is one of the basenames `src_argos` would usually check (see below).  One note: `src_argos` will only pay attention to this environment variable if it points to an actual file, not a URL or JSON string.  This is construed as a feature, in that it may limit the damage someone can inflict by fiddling with the environment.  If you trust the environment, you can be more permissive by writing something like
+If you need to specify where to look at runtime, you can use the environment variable _BASENAME_\_`CONFIG` to point to a configuration file, where _BASENAME_ is one of the basenames `src_argos` would usually check (see below).  One note: `src_argos` will only pay attention to this environment variable if it points to an actual file, not a URL or JSON string.  This is construed as a feature, in that it may limit the damage someone can inflict by fiddling with the environment.  If you trust the environment, you can be more permissive by writing something like
 
 ```
 my.paths <- c()
