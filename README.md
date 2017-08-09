@@ -73,7 +73,7 @@ You can install Argos from github with:
 
 ```R
 # install.packages("devtools")
-devtools::install_github("ohdsi-argos/baileych")
+devtools::install_github("baileych/ohdsi-argos")
 ```
 
 ## Example
