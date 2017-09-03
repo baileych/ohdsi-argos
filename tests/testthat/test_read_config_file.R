@@ -10,4 +10,8 @@ test_that('Config file contents (JSON) can be parsed', {
                  ignore.order = TRUE)
 })
 
+test_that('Missing config causes error', {
+    expect_error(Argos::read_config_file('does/not/exist'),
+                 'No config files found')
+})
 

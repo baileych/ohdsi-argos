@@ -12,16 +12,17 @@ the configuration file.}
 }
 \value{
 A data frame containing the contents of the configuration file,
-  as parsed by \code{\link[jsonlite]{fromJSON}}, or \code{NA} if no file
-  could be read.
+  as parsed by \code{\link[jsonlite]{fromJSON}}.
 }
 \description{
 Given a vector of file paths, \code{read_config_file} attempts to read a JSON
 configuration file, using each element of the vector to locate the file.
 It returns the contents of the first file successfully read; subsequent path
-specifications are ignored.
+specifications are ignored.  If no path succeeds, a fatal error is signalled.
 }
 \examples{
+\dontrun{
 read_config_file( c('~/my_app.json', '~/my_proj.json'))
+}
 }
 

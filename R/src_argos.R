@@ -145,14 +145,13 @@ find_config_files <- function(basenames = .basename.defaults(),
 #' Given a vector of file paths, \code{read_config_file} attempts to read a JSON
 #' configuration file, using each element of the vector to locate the file.
 #' It returns the contents of the first file successfully read; subsequent path
-#' specifications are ignored.
-#' 
+#' specifications are ignored.  If no path succeeds, a fatal error is signalled.
+#'
 #' @param paths A vector of path specifications to use in searching for
 #'   the configuration file.
 #'
 #' @return A data frame containing the contents of the configuration file,
-#'   as parsed by \code{\link[jsonlite]{fromJSON}}, or \code{NA} if no file
-#'   could be read.
+#'   as parsed by \code{\link[jsonlite]{fromJSON}}.
 #'
 #' @examples
 #' read_config_file( c('~/my_app.json', '~/my_proj.json'))
@@ -163,6 +162,8 @@ read_config_file <- function(paths = NA) {
                      error = function(e) NA)
         if (!is.na(config[1])) return(config)
     }
+
+    stop("No config files found")
 }
 
 
