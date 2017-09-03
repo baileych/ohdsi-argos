@@ -154,7 +154,9 @@ find_config_files <- function(basenames = .basename.defaults(),
 #'   as parsed by \code{\link[jsonlite]{fromJSON}}.
 #'
 #' @examples
+#' \dontrun{
 #' read_config_file( c('~/my_app.json', '~/my_proj.json'))
+#' }
 read_config_file <- function(paths = NA) {
     for (p in paths) {
         config <-
