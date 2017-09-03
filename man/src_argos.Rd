@@ -25,18 +25,25 @@ A \code{\link[dplyr]{src}} object.  The specific class of the object
   is determined by the \code{src_name} in the configuration data.
 }
 \description{
-\code{src_argos} sets up a \pkg{dplyr} data source using information from
-a JSON configuration file, and returns \code{\link[dplyr]{src}} for that
-data source.
+\code{src_argos} sets up a \pkg{dplyr} or \pkg{DBI} data source
+using information from a JSON configuration file, and returns
+the data source.
 }
 \details{
 The configuration file must provide all of the information
-necessary to set up the \code{\link[dplyr]{src}}.  Given the
-variety of ways a \code{\link[dplyr]{src}} can be specified, the
-JSON must be a two-element hash.  The \verb{src_name} key points to
-a string containing name of \pkg{dplyr} function that sets up the
-data source (e.g. \code{\link[dplyr]{src_postgres}}).  The
-\verb{src_args} key points to a nested hash, whose keys are the
+necessary to set up the \code{\link[dplyr]{src}} or \link[DBI]{DBI}
+connection.  Given the variety of ways a data source can be
+specified, the JSON must be a two-element hash.  The
+\verb{src_name} key points to a string containing name of a
+\pkg{dplyr} function that sets up the data source
+(e.g. \code{\link[dplyr]{src_postgres}}), or of a \pkg{DBI} driver
+method (e.g. \verb{SQLite}), as one might pass to
+\link[DBI]{dbDriver}.  If the \verb{src_name} begins with
+\code{src_}, it is taken as the former, otherwise it is taken as
+the latter.  In this case, an attempt will be made to load an
+appropriate \pkg{DBI} library if the driver function is not found.
+
+The \verb{src_args} key points to a nested hash, whose keys are the
 arguments to that function, and whose values are the argument
 values.
 

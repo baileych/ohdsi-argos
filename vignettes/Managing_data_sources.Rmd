@@ -11,24 +11,29 @@ vignette: >
 
 ## Setting up connections
 
-The [dplyr](https://cran.r-project.org/web/packages/dplyr/) package abstracts away database connection details, and a fair amount of dialect-specific SQL, behind its `src` objects.  However, code that uses [dplyr](https://cran.r-project.org/web/packages/dplyr/) must construct an appropriate `src`, and use it to create any `tbl` in stance that are used in a `join` operation.  This creates two problems for code that one might want to distrinbute.  First, the connection-building `src_whatever` statement typically contains credentials used to authenticate to the database server.  This creates a security risk, as sending around personal credentials isn't a good idea for a variety of reasons, and using the same "service credentials" for many users makes tracking usage more difficult.  It also makes it harder to reuse code, since it has to be edited to accommodate different users or different databases.
+The [dplyr](https://cran.r-project.org/web/packages/dplyr/) package abstracts away database connection details, and a fair amount of dialect-specific SQL, behind its own `src` objects or its use of `DBI` connection objects.  However, code that uses [dplyr](https://cran.r-project.org/web/packages/dplyr/) must construct an appropriate `src` or connection, and use it to create any `tbl` instances that are used in a `join` operation.  This creates two problems for code that one might want to distribute.  First, the connection-building `src_whatever` or `dbConnect` statement typically contains credentials used to authenticate to the database server.  This creates a security risk, as sending around personal credentials isn't a good idea for a variety of reasons, and using the same "service credentials" for many users makes tracking usage more difficult.  It also makes it harder to reuse code, since it has to be edited to accommodate different users or different databases.
 
-Argos provides some help in this area by providing the `src_argos` function.  As its documentation explains, `src_argos` isn't a new type of [dplyr](https://cran.r-project.org/web/packages/dplyr/) data source, but an adapter that lets you create a data source of a type known to [dplyr](https://cran.r-project.org/web/packages/dplyr/) using configuration data passed to `src_argos`, or, more importantly, supplied in a configuration file.  This behavior is not OHDSI-specific, and can be used to set up any [dplyr](https://cran.r-project.org/web/packages/dplyr/) data source.
+Argos provides some help in this area by providing the `src_argos` function.  As its documentation explains, `src_argos` isn't a new type of [dplyr](https://cran.r-project.org/web/packages/dplyr/) data source, but an adapter that lets you create a data source of a type known to [dplyr](https://cran.r-project.org/web/packages/dplyr/) or [DBI](https://cran.r-project.org/web/packages/DBI/) using configuration data passed to `src_argos`, or, more importantly, supplied in a configuration file.  This behavior is not OHDSI-specific, and can be used to set up any [dplyr](https://cran.r-project.org/web/packages/dplyr/)  or [DBI](https://cran.r-project.org/web/packages/DBI/)data source.
 
 ### Configuration file structure
 
-Argos configuration files provide a simple way to represent in JSON the information needed to construct a [dplyr](https://cran.r-project.org/web/packages/dplyr/) data source.  The JSON must define a single object (or hash), which is translated into a list structure within R.  Two keys from the object are meaningful.  The `src_name` key must point to the name of a [dplyr](https://cran.r-project.org/web/packages/dplyr/) function used to construct a data source, typically a database connection, such as `src_postgres` or `src_mysql`.  The `src_args` key itself points to a list, where the keys are names of arguments to the constructor, and the corresponding elements are the argument values.  Here's a typical example:
+Argos configuration files provide a simple way to represent in JSON the information needed to construct a data source.  The JSON must define a single object (or hash), which is translated into a list structure within R.  Two keys from the object are meaningful.  The `src_name` key must point to either
+
+* the name of a [dplyr](https://cran.r-project.org/web/packages/dplyr/) function used to construct a data source, typically a database connection, such as `src_postgres` or `src_mysql`, or
+* the name of a driver function compatible with the [DBI](https://cran.r-project.org/web/packages/DBI/) specification, such as `SQLite` or `PostgreSQL` (N.B. the initial `R` in the package name is not included).
+
+The `src_args` key itself points to a list, where the keys are names of arguments to the constructor, and the corresponding elements are the argument values.  Here's a typical example:
 
 ```
 {
     "src_name" : "src_postgres",
     "src_args" : {
-	    "host"          : "my.database.server",
-		"port"          : 5432,
-		"dbname"    : "project_db",
-		"username"  : "my_credential",
-		"password"  : "DontLook",
-		"options"     " "-c search_path=schema0,schema1,schema2"
+	      "host"     : "my.database.server",
+		    "port"     : 5432,
+		    "dbname"   : "project_db",
+		    "username" : "my_credential",
+		    "password" : "DontLook",
+		    "options"  : "-c search_path=schema0,schema1,schema2"
      }
 }
 ```
