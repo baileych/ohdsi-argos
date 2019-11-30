@@ -38,7 +38,19 @@ The `src_args` key itself points to a list, where the keys are names of argument
 }
 ```
 
-If you're deriving the configuration information programattically, you can pass it directly to `src_argos` via the `config` argument, but it's perhaps more common that configuration remains the same for a given situation.  For these cases, Argos encourages separation of configuration from code.
+If you're deriving the configuration information programatically, you can pass it directly to `src_argos` via the `config` argument, but it's perhaps more common that configuration remains the same for a given situation.  For these cases, Argos encourages separation of configuration from code.
+
+### Post-connection setup
+
+Once the connection is established, there may be additional work to do.  For example, session settings may need to be altered, or schemas to search specified, or authorization roles changed.  There are two options that Argos provides to address this: `post_connect_sql` and `post_connect_fun`.  In both cases, this makes it possible to execute additional code specified in the configuration file.  Since this creates the possibility that unknown code may be executed and produce unwanted effects, you need to opt in to each option, using the `allow_post_connect_sql` or `allow_post_connect_fun` parameters to `src_argos`.
+
+#### `post_conect_sql`
+
+This option allows you to pass a series of SQL statements to the newly-established database session for execution.  In this way, you can change database session settings to match the intended use of the connection.  While these statements can make any changes the database server will permit, they cannot alter the R environment directly.
+
+#### `post_connect_fun`
+
+This option gives you the most freedom to make changes.  It lets you write an R function that takes the newly-established database connection as its single parameter.  It may perform computation in the database, change connection settings, or even replace the connection.  The value it returns will be passed back as the return value of `src_argos`.
 
 ## Finding configuration data
 

@@ -1,45 +1,57 @@
 #' Connect to database using config file
 #'
-#' \code{src_argos} sets up a \pkg{dplyr} or \pkg{DBI} data source
-#' using information from a JSON configuration file, and returns
-#' the data source.
+#' \code{src_argos} sets up a \pkg{dplyr} or \pkg{DBI} data source using
+#' information from a JSON configuration file, and returns the data source.
 #'
-#' The configuration file must provide all of the information
-#' necessary to set up the \code{\link[dplyr]{src}} or \link[DBI]{DBI}
-#' connection.  Given the variety of ways a data source can be
-#' specified, the JSON must be a two-element hash.  The
-#' \verb{src_name} key points to a string containing name of a
-#' \pkg{dplyr} function that sets up the data source
-#' (e.g. \code{\link[dplyr]{src_postgres}}), or of a \pkg{DBI} driver
-#' method (e.g. \verb{SQLite}), as one might pass to
-#' \link[DBI]{dbDriver}.  If the \verb{src_name} begins with
-#' \code{src_}, it is taken as the former, otherwise it is taken as
-#' the latter.  In this case, an attempt will be made to load an
+#' The configuration file must provide all of the information necessary to set
+#' up the \code{\link[dplyr]{src}} or \link[DBI]{DBI} connection.  Given the
+#' variety of ways a data source can be specified, the JSON must be a
+#' two-element hash.  The \verb{src_name} key points to a string containing name
+#' of a \pkg{dplyr} function that sets up the data source (e.g.
+#' \code{\link[dplyr]{src_postgres}}), or of a \pkg{DBI} driver method (e.g.
+#' \verb{SQLite}), as one might pass to \link[DBI]{dbDriver}.  If the
+#' \verb{src_name} begins with \code{src_}, it is taken as the former, otherwise
+#' it is taken as the latter.  In this case, an attempt will be made to load an
 #' appropriate \pkg{DBI} library if the driver function is not found.
 #'
-#' The \verb{src_args} key points to a nested hash, whose keys are the
-#' arguments to that function, and whose values are the argument
-#' values.
+#' The \verb{src_args} key points to a nested hash, whose keys are the arguments
+#' to that function, and whose values are the argument values.
 #'
-#' If \code{paths} is present, only the specified paths are checked.
-#' Otherwise, \code{\link{find_config_files}} is called to locate
-#' candidate configuration files, using \code{dirs} and
-#' \code{basenames}, if present.  The first file that exists, is
-#' readable, and evaluates as legal JSON is used as the source of
-#' configuration data.
+#' If \code{paths} is present, only the specified paths are checked. Otherwise,
+#' \code{\link{find_config_files}} is called to locate candidate configuration
+#' files, using \code{dirs} and \code{basenames}, if present.  The first file
+#' that exists, is readable, and evaluates as legal JSON is used as the source
+#' of configuration data.
+#'
+#' Finally, \code{allow_post_connect_sql} and \code{allow_post_connect_fun} let
+#' you permit the configuration file to operate on the database connection after
+#' it is made, in order to set session behaviors or the like.  Because this entails
+#' the configuration file providing code that you won't see prior to runtime, you
+#' need to opt in to these features.
 #'
 #' @param basenames A vector of file names to use in searching for configuration
 #'   file, if \code{paths} is absent.  It defaults to the name of this file.
 #' @param dirs A vector of directory names to use in searching for configuration
-#'   files, if \code{paths} is absent.  It defaults to \verb{$HOME}, the location
-#'   of the file containing the calling function, and the location of this file.
-#' @param paths A vector of full path names for the configuration file.  If present,
-#'   only \code{paths} is checked.
+#'   files, if \code{paths} is absent.  It defaults to \verb{$HOME}, the
+#'   location of the file containing the calling function, and the location of
+#'   this file.
+#' @param paths A vector of full path names for the configuration file.  If
+#'   present, only \code{paths} is checked.
 #' @param config A list containg the configuration data, to be used instead of
 #'   reading a configuration file, should you wish to skip that step.
+#' @param allow_post_connect_sql A Boolean value indicating whether the contents
+#'   of a \code{post_connect_sql} list in the configuration should be executed
+#'   if present. If TRUE, each element of the list is treated as a separate SQL
+#'   statement.
+#' @param allow_post_connect_fun A Boolean value indicating whether the contents
+#'   of a \code{post_connect_fun} list in the configuration should be executed
+#'   if present. If TRUE, the list elements are concatened and evaluated.  They
+#'   must define a function taking a single argument, the database connection.
+#'   The return value will replace the database connection, and become the
+#'   return value for src_argos().
 #'
-#' @return A \code{\link[dplyr]{src}} object.  The specific class of the object
-#'   is determined by the \code{src_name} in the configuration data.
+#' @return A database connection.  The specific class of the object is determined
+#'   by the \code{src_name} in the configuration data.
 #'
 #' @examples
 #' \dontrun{
@@ -57,7 +69,9 @@
 #' src_argos(paths = c('/path/to/known/config.json'))
 #' }
 
-src_argos <- function(basenames = NA, dirs = NA, paths = NA, config = NA) {
+src_argos <- function(basenames = NA, dirs = NA, paths = NA, config = NA,
+                      allow_post_connect_sql = FALSE,
+                      allow_post_connect_fun = FALSE) {
 
     if (is.na(config)) {
         if (is.na(paths)) {
@@ -77,7 +91,20 @@ src_argos <- function(basenames = NA, dirs = NA, paths = NA, config = NA) {
         config$src_name <- function(...) DBI::dbConnect(drv,...)
     }
 
-    do.call(config$src_name, config$src_args)
+    db <- do.call(config$src_name, config$src_args)
+
+    if (allow_post_connect_sql &&
+        exists('post_connect_sql', where = config)) {
+        con <- if (inherits(db, 'src_dbi')) db$con else db
+        lapply(config$post_connect_sql, function(x) DBI::dbExecute(con, x))
+    }
+    if (allow_post_connect_fun &&
+        exists('post_connect_fun', where = config)) {
+        pc <- eval(parse(text = paste(config$post_connect_fun,
+                                      sep = "\n", collapse = "\n")))
+        db <- do.call(pc, list(db))
+    }
+    db
 }
 
 
