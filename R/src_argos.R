@@ -27,7 +27,10 @@
 #' you permit the configuration file to operate on the database connection after
 #' it is made, in order to set session behaviors or the like.  Because this entails
 #' the configuration file providing code that you won't see prior to runtime, you
-#' need to opt in to these features.
+#' need to opt in to these features.  You can make this choice globally by setting
+#'  the  \code{src_argos.allow_post_connect_sql} and
+#'   \code{src_argos.allow_post_connect_fun} via \link{\code{base::options()}}.
+#'  `
 #'
 #' @param basenames A vector of file names to use in searching for configuration
 #'   file, if \code{paths} is absent.  It defaults to the name of this file.
@@ -70,8 +73,10 @@
 #' }
 
 src_argos <- function(basenames = NA, dirs = NA, paths = NA, config = NA,
-                      allow_post_connect_sql = FALSE,
-                      allow_post_connect_fun = FALSE) {
+                      allow_post_connect_sql =
+                          getOption('src_argos.allow_post_connect_sql', FALSE),
+                      allow_post_connect_fun =
+                          getOption('src_argos.allow_post_connect_fun', FALSE)) {
 
     if (is.na(config)) {
         if (is.na(paths)) {
